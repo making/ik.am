@@ -40,9 +40,8 @@
         <ul>
         <#list events as event>
             <li>${event.createdAt} [${event.type}] <a href="https://github.com/${event.repo}">${event.repo}</a>
-                <#if event.message??><br>📝 <a
-                        href="${event.url}">${event.message}</a><#elseif event.url??>
-                    <br><a　href="${event.url}">🔎</a></#if>
+                <#if event.message??><br>📝 <a href="${event.url}">${event.message}</a><#elseif event.url??>
+                    <br><a href="${event.url}">🔎</a></#if>
             </li>
         </#list>
         </ul>
