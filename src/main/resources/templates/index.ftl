@@ -49,7 +49,7 @@
     </section>
     <footer>
         <p>
-            <small>IK.AM &mdash; &copy; 2013-2017 Toshiaki Maki</small>
+            <small><a href="https://github.com/making/ik.am">IK.AM</a> &mdash; &copy; 2013-2017 Toshiaki Maki</small>
         </p>
     </footer>
 </div>
