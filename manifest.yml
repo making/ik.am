@@ -1,0 +1,10 @@
+applications:
+- name: web
+  memory: 120m
+  buildpack: java_buildpack
+  path: target/web-0.0.1-SNAPSHOT.jar
+  routes:
+  - route: ik.am
+  - route: www.ik.am
+  env:
+    JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: {memory_sizes: {metaspace: 30m, stack: 228k}, memory_heuristics: {heap: 50000, native: 10}}]'
