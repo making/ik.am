@@ -1,7 +1,7 @@
 applications:
 - name: web
-  memory: 120m
-  buildpack: java_buildpack
+  memory: 128m
+  buildpack: java_buildpack_offline
   path: target/web-0.0.1-SNAPSHOT.jar
   routes:
   - route: ik.am
