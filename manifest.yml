@@ -1,6 +1,6 @@
 applications:
 - name: web
-  memory: 128m
+  memory: 200m
   buildpack: java_buildpack_offline
   path: target/web-0.0.1-SNAPSHOT.jar
   routes:
