@@ -4,26 +4,23 @@ import static java.util.Spliterator.SIZED;
 import static java.util.Spliterators.spliterator;
 import static java.util.stream.StreamSupport.stream;
 
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientOperations;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import reactor.core.publisher.Flux;
 
 public class BlogClient {
-	private final WebClientOperations operations;
+	private final WebClient webClient;
 
-	public BlogClient(WebClient webClient) {
-		this.operations = WebClientOperations.builder(webClient)
-				.uriBuilderFactory(new DefaultUriBuilderFactory(
-						"https://blog-api.cfapps.pez.pivotal.io/api/"))
-				.build();
+	public BlogClient(ClientHttpConnector httpConnector) {
+		this.webClient = WebClient.builder("https://blog-api.cfapps.pez.pivotal.io/api/")
+				.clientConnector(httpConnector).build();
 	}
 
 	public Flux<Entry> findEntries(int size) {
-		return this.operations.get()
+		return this.webClient.get()
 				.uri(f -> f.uriString("entries").queryParam("excludeContent", true)
 						.queryParam("size", size).build())
 				.exchange().then(x -> x.bodyToMono(JsonNode.class))

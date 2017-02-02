@@ -10,10 +10,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientOperations;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -24,25 +23,25 @@ import reactor.util.function.Tuples;
 
 public class GitHubClient {
 
-	private final WebClientOperations operations;
+	private final WebClient webClient;
 
 	private AtomicReference<Tuple2<String, List<GitHubEvent>>> last = new AtomicReference<>(
 			null);
 
-	public GitHubClient(WebClient webClient) {
-		this.operations = WebClientOperations.builder(webClient).uriBuilderFactory(
-				new DefaultUriBuilderFactory("https://api.github.com/")).build();
+	public GitHubClient(ClientHttpConnector httpConnector) {
+		this.webClient = WebClient.builder("https://api.github.com/")
+				.clientConnector(httpConnector).build();
 	}
 
 	public Flux<GitHubEvent> findEvents() {
 		Mono<ClientResponse> exchange;
 		if (last.get() != null) {
-			exchange = this.operations.get().uri("users/making/events")
+			exchange = this.webClient.get().uri("users/making/events")
 					.header("User-Agent", "am.ik.client.GitHubClient")
 					.ifNoneMatch(last.get().getT1()).exchange();
 		}
 		else {
-			exchange = this.operations.get().uri("users/making/events")
+			exchange = this.webClient.get().uri("users/making/events")
 					.header("User-Agent", "am.ik.client.GitHubClient").exchange();
 		}
 		return exchange.then(res -> res.statusCode() == HttpStatus.NOT_MODIFIED

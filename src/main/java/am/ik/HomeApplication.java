@@ -6,6 +6,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.*
 import java.util.Optional;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
@@ -44,9 +45,9 @@ public class HomeApplication {
 	}
 
 	static HttpHandler httpHandler() {
-		WebClient webClient = WebClient.builder(new ReactorClientHttpConnector()).build();
-		BlogClient blogClient = new BlogClient(webClient);
-		GitHubClient gitHubClient = new GitHubClient(webClient);
+		ClientHttpConnector httpConnector = new ReactorClientHttpConnector();
+		BlogClient blogClient = new BlogClient(httpConnector);
+		GitHubClient gitHubClient = new GitHubClient(httpConnector);
 		HomeHandler homeHandler = new HomeHandler(blogClient, gitHubClient);
 		RouterFunction<?> route = route(GET("/"), homeHandler::indexView)
 				.and(resources("/**", new ClassPathResource("static/")));
