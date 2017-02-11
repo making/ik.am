@@ -86,59 +86,20 @@ jobs:
     plan:
       - aggregate:
         - get: repo
-      - task: build-m2
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: maven
-              tag: 3.3-jdk-8-alpine
-          inputs:
-            - name: repo
-          outputs:
-            - name: to-push
-          run:
-            path: sh
-            args:
-            - -c
-            - |
-              cd repo
-              mvn clean package -Dmaven.repo.local=../m2/rootfs/opt/m2
-              cd ../m2
-              tar -C rootfs -cf rootfs.tar .
-              mv rootfs.tar ../to-push
+        - get: utils
+      - task: create-m2-rootfs
+        file: utils/tasks/m2-rootfs-init.yml
       - put: m2
         params:
-          import_file: to-push/rootfs.tar
+          import_file: output/rootfs.tar
   - name: update-m2
     plan:
       - aggregate:
         - get: repo
+        - get: utils
         - get: m2
-      - task: build-m2
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: maven
-              tag: 3.3-jdk-8-alpine
-          inputs:
-            - name: repo
-            - name: m2
-          outputs:
-            - name: to-push
-          run:
-            path: sh
-            args:
-            - -c
-            - |
-              cd repo
-              mvn clean package -Dmaven.repo.local=../m2/rootfs/opt/m2
-              cd ../m2
-              tar -C rootfs -cf rootfs.tar .
-              mv rootfs.tar ../to-push
+      - task: create-m2-rootfs
+        file: utils/tasks/m2-rootfs-update.yml
       - put: m2
         params:
-          import_file: to-push/rootfs.tar
+          import_file: output/rootfs.tar
