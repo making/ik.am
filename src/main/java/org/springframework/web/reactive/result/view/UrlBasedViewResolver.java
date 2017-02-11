@@ -60,6 +60,7 @@ import reactor.core.publisher.Mono;
  * @author Sebastien Deleuze
  * @since 5.0
  */
+// Workaround for SPR-15219
 public class UrlBasedViewResolver extends ViewResolverSupport
 		implements ViewResolver, InitializingBean {
 
