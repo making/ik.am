@@ -39,7 +39,7 @@ public class HomeApplicationTests {
 			handler.block();
 		}
 
-		webClient = WebClient.builder(String.format("http://%s:%d", host, port))
+		webClient = WebClient.builder().baseUrl(String.format("http://%s:%d", host, port))
 				.clientConnector(new ReactorClientHttpConnector()).build();
 	}
 

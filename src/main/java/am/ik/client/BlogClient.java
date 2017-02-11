@@ -15,13 +15,14 @@ public class BlogClient {
 	private final WebClient webClient;
 
 	public BlogClient(ClientHttpConnector httpConnector) {
-		this.webClient = WebClient.builder("https://blog-api.cfapps.pez.pivotal.io/api/")
+		this.webClient = WebClient.builder()
+				.baseUrl("https://blog-api.cfapps.pez.pivotal.io/api/")
 				.clientConnector(httpConnector).build();
 	}
 
 	public Flux<Entry> findEntries(int size) {
 		return this.webClient.get()
-				.uri(f -> f.uriString("entries").queryParam("excludeContent", true)
+				.uri(f -> f.path("entries").queryParam("excludeContent", true)
 						.queryParam("size", size).build())
 				.exchange().then(x -> x.bodyToMono(JsonNode.class))
 				.map(res -> res.get("content").elements())

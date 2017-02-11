@@ -29,7 +29,7 @@ public class GitHubClient {
 			null);
 
 	public GitHubClient(ClientHttpConnector httpConnector) {
-		this.webClient = WebClient.builder("https://api.github.com/")
+		this.webClient = WebClient.builder().baseUrl("https://api.github.com/")
 				.clientConnector(httpConnector).build();
 	}
 
