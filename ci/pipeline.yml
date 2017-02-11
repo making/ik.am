@@ -1,0 +1,144 @@
+---
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:making/ik.am.git
+      branch: master
+      private_key: {{github-private-key}}
+  - name: repo-version
+    type: semver
+    source:
+      uri: git@github.com:making/ik.am-version.git
+      branch: master
+      private_key: {{github-private-key}}
+      file: version
+      driver: git
+  - name: utils
+    type: git
+    source:
+      uri: https://github.com/maki-home/concourse-utils
+      branch: master
+  - name: cf
+    type: cf
+    source:
+      api: {{cf-api}}
+      username: {{cf-username}}
+      password: {{cf-password}}
+      organization: {{cf-org}}
+      space: home
+      skip_cert_check: true
+  - name: m2
+    type: docker-image
+    source:
+      repository: making/ikam-m2
+      username: {{docker-username}}
+      password: {{docker-password}}  
+      email: {{docker-email}}  
+jobs:
+  - name: unit-test
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo
+          trigger: true
+        - get: utils
+        - get: m2
+      - task: unit
+        file: utils/tasks/unit-test.yml
+  - name: deploy-to-nexus
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo
+          trigger: true
+          passed:
+          - unit-test
+        - get: utils
+        - get: m2
+      - task: deploy
+        file: utils/tasks/deploy-to-nexus.yml
+        params:
+          NEXUS_USERNAME: {{nexus-username}}
+          NEXUS_PASSWORD: {{nexus-password}}
+  - name: deploy-to-cf
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo
+          trigger: true
+          passed:
+          - deploy-to-nexus
+        - get: repo-version
+        - get: utils
+      - task: download
+        file: utils/tasks/download-snapshot.yml
+        params:
+          GROUP_ID: am.ik
+          ARTIFACT_ID: web
+      - put: cf
+        params:
+          manifest: repo/manifest.yml
+          path: output/app.jar
+          current_app_name: web
+  ### M2 cache
+  - name: init-m2
+    plan:
+      - aggregate:
+        - get: repo
+      - task: build-m2
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: maven
+              tag: 3.3-jdk-8-alpine
+          inputs:
+            - name: repo
+          outputs:
+            - name: to-push
+          run:
+            path: sh
+            args:
+            - -c
+            - |
+              cd repo
+              mvn clean package -Dmaven.repo.local=../m2/rootfs/opt/m2
+              cd ../m2
+              tar -C rootfs -cf rootfs.tar .
+              mv rootfs.tar ../to-push
+      - put: m2
+        params:
+          import_file: to-push/rootfs.tar
+  - name: update-m2
+    plan:
+      - aggregate:
+        - get: repo
+        - get: m2
+      - task: build-m2
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: maven
+              tag: 3.3-jdk-8-alpine
+          inputs:
+            - name: repo
+            - name: m2
+          outputs:
+            - name: to-push
+          run:
+            path: sh
+            args:
+            - -c
+            - |
+              cd repo
+              mvn clean package -Dmaven.repo.local=../m2/rootfs/opt/m2
+              cd ../m2
+              tar -C rootfs -cf rootfs.tar .
+              mv rootfs.tar ../to-push
+      - put: m2
+        params:
+          import_file: to-push/rootfs.tar
