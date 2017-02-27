@@ -15,8 +15,7 @@ public class BlogClient {
 	private final WebClient webClient;
 
 	public BlogClient(ClientHttpConnector httpConnector) {
-		this.webClient = WebClient.builder()
-				.baseUrl("https://blog-api.cfapps.pez.pivotal.io/api/")
+		this.webClient = WebClient.builder().baseUrl("https://blog-api.ik.am/api/")
 				.clientConnector(httpConnector).build();
 	}
 
@@ -24,12 +23,14 @@ public class BlogClient {
 		return this.webClient.get()
 				.uri(f -> f.path("entries").queryParam("excludeContent", true)
 						.queryParam("size", size).build())
-				.exchange().then(x -> x.bodyToMono(JsonNode.class))
+				.header("User-Agent", "am.ik.client.BlogClient").exchange()
+				.then(x -> x.bodyToMono(JsonNode.class))
 				.map(res -> res.get("content").elements())
 				.flatMap(x -> Flux.fromStream(stream(spliterator(x, size, SIZED), false)))
 				.map(n -> new Entry(n.get("entryId").asLong(),
-						n.get("frontMatter").get("title").asText(),
-						n.get("created").get("date").asText(),
+						n.get("frontMatter").get("title").asText(), n.get("created")
+								.get("date")
+								.asText(),
 						n.get("updated").get("date").asText()))
 				.switchOnError(Flux.empty());
 	}
