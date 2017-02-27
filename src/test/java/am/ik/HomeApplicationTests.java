@@ -1,23 +1,17 @@
 package am.ik;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.SocketUtils;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
 import reactor.ipc.netty.NettyContext;
 import reactor.ipc.netty.http.server.HttpServer;
 
-// TODO use TestSubscriber
 public class HomeApplicationTests {
-	static WebClient webClient;
+	static WebTestClient webClient;
 	static int port;
 	static String host;
 
@@ -39,14 +33,12 @@ public class HomeApplicationTests {
 			handler.block();
 		}
 
-		webClient = WebClient.builder().baseUrl(String.format("http://%s:%d", host, port))
-				.clientConnector(new ReactorClientHttpConnector()).build();
+		webClient = WebTestClient.bindToServer()
+				.baseUrl(String.format("http://%s:%d", host, port)).build();
 	}
 
 	@Test
 	public void root() {
-		Mono<ClientResponse> result = webClient.get().uri("").exchange();
-		// assertThat(result.block().bodyToMono(String.class).block()).isEqualTo("Sample");
-		assertThat(result.block().statusCode()).isEqualTo(HttpStatus.OK);
+		webClient.get().uri("").exchange().assertStatus().isOk();
 	}
 }
