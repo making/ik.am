@@ -1,4 +1,10 @@
 ---
+resource_types:
+- name: curl
+  type: docker-image
+  source:
+    repository: pivotalservices/concourse-curl-resource
+    tag: latest
 resources:
   - name: repo
     type: git
@@ -34,7 +40,12 @@ resources:
       repository: making/ikam-m2
       username: {{docker-username}}
       password: {{docker-password}}  
-      email: {{docker-email}}  
+      email: {{docker-email}}
+  - name: pom
+    type: curl
+    source:
+      url: https://api.github.com/repos/making/ik.am/contents/pom.xml
+      filename: pom.xml
 jobs:
   - name: unit-test
     plan:
@@ -95,6 +106,8 @@ jobs:
   - name: update-m2
     plan:
       - aggregate:
+        - get: pom
+          trigger: true
         - get: repo
         - get: utils
         - get: m2
