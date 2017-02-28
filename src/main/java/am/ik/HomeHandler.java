@@ -1,10 +1,13 @@
 package am.ik;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -20,6 +23,10 @@ public class HomeHandler {
 	public HomeHandler(BlogClient blogClient, GitHubClient gitHubClient) {
 		this.blogClient = blogClient;
 		this.gitHubClient = gitHubClient;
+	}
+
+	public RouterFunction<ServerResponse> route() {
+		return RouterFunctions.route(GET("/"), this::indexView);
 	}
 
 	public Mono<ServerResponse> indexView(ServerRequest req) {

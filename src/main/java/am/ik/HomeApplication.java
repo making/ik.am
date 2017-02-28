@@ -1,7 +1,7 @@
 package am.ik;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RouterFunctions.*;
+import static org.springframework.web.reactive.function.server.RouterFunctions.resources;
+import static org.springframework.web.reactive.function.server.RouterFunctions.toHttpHandler;
 
 import java.util.Optional;
 
@@ -10,9 +10,9 @@ import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
 
 import am.ik.client.BlogClient;
 import am.ik.client.GitHubClient;
@@ -49,10 +49,14 @@ public class HomeApplication {
 		BlogClient blogClient = new BlogClient(httpConnector);
 		GitHubClient gitHubClient = new GitHubClient(httpConnector);
 		HomeHandler homeHandler = new HomeHandler(blogClient, gitHubClient);
-		RouterFunction<?> route = route(GET("/"), homeHandler::indexView)
-				.and(resources("/**", new ClassPathResource("static/")));
+
+		RouterFunction<?> route = homeHandler.route().and(staticResources());
 		return toHttpHandler(route, HandlerStrategies.builder()
 				.viewResolver(FreeMarkerConfig.viewResolver()).build());
+	}
+
+	static RouterFunction<ServerResponse> staticResources() {
+		return resources("/**", new ClassPathResource("static/"));
 	}
 
 }
