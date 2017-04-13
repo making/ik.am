@@ -1,9 +1,5 @@
 package am.ik.client;
 
-import static java.util.Spliterator.SIZED;
-import static java.util.Spliterators.spliterator;
-import static java.util.stream.StreamSupport.stream;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -67,13 +63,12 @@ public class GitHubClient {
 						createdAt));
 			case "Push": {
 				JsonNode commits = n.get("payload").get("commits");
-				return stream(spliterator(commits.elements(), commits.size(), SIZED),
-						false).map(c -> {
-							return new GitHubEvent(type, repo,
-									c.get("message").asText(), "https://github.com/"
-											+ repo + "/commit/" + c.get("sha").asText(),
-									createdAt);
-						});
+				return StreamSupport.stream(commits.spliterator(), false).map(c -> {
+					return new GitHubEvent(
+							type, repo, c.get("message").asText(), "https://github.com/"
+									+ repo + "/commit/" + c.get("sha").asText(),
+							createdAt);
+				});
 			}
 			default:
 				return Stream.of(new GitHubEvent(type, repo, null, null, createdAt));
