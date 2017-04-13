@@ -44,13 +44,13 @@ public class GitHubClient {
 			exchange = this.webClient.get().uri("users/making/events")
 					.header("User-Agent", "am.ik.client.GitHubClient").exchange();
 		}
-		return exchange.then(res -> res.statusCode() == HttpStatus.NOT_MODIFIED
+		return exchange.flatMap(res -> res.statusCode() == HttpStatus.NOT_MODIFIED
 				? Mono.just(last.get().getT2())
 				: res.bodyToMono(JsonNode.class).map(node -> {
 					List<GitHubEvent> events = bodyToList(node);
 					last.set(Tuples.of(res.headers().asHttpHeaders().getETag(), events));
 					return events;
-				})).flatMap(Flux::fromIterable).switchOnError(last.get() == null
+				})).flatMapMany(Flux::fromIterable).switchOnError(last.get() == null
 						? Flux.empty() : Flux.fromIterable(last.get().getT2()));
 	}
 

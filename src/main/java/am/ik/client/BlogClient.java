@@ -24,13 +24,13 @@ public class BlogClient {
 				.uri(f -> f.path("entries").queryParam("excludeContent", true)
 						.queryParam("size", size).build())
 				.header("User-Agent", "am.ik.client.BlogClient").exchange()
-				.then(x -> x.bodyToMono(JsonNode.class))
+				.flatMap(x -> x.bodyToMono(JsonNode.class))
 				.map(res -> res.get("content").elements())
-				.flatMap(x -> Flux.fromStream(stream(spliterator(x, size, SIZED), false)))
+				.flatMapMany(
+						x -> Flux.fromStream(stream(spliterator(x, size, SIZED), false)))
 				.map(n -> new Entry(n.get("entryId").asLong(),
-						n.get("frontMatter").get("title").asText(), n.get("created")
-								.get("date")
-								.asText(),
+						n.get("frontMatter").get("title").asText(),
+						n.get("created").get("date").asText(),
 						n.get("updated").get("date").asText()))
 				.switchOnError(Flux.empty());
 	}
