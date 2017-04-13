@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ClientHttpConnector;
@@ -55,34 +56,29 @@ public class GitHubClient {
 	}
 
 	private static List<GitHubEvent> bodyToList(JsonNode node) {
-		return stream(spliterator(node.elements(), node.size(), SIZED), false)
-				.flatMap(n -> {
-					String type = n.get("type").asText().replace("Event", "");
-					String repo = n.get("repo").get("name").asText();
-					String createdAt = n.get("created_at").asText();
-					switch (type) {
-					case "PullRequest":
-						return Stream.of(new GitHubEvent(type, repo, null,
-								n.get("payload").get("pull_request").get("html_url")
-										.asText(),
-								createdAt));
-					case "Push": {
-						JsonNode commits = n.get("payload").get("commits");
-						return stream(
-								spliterator(commits.elements(), commits.size(), SIZED),
-								false).map(c -> {
-									return new GitHubEvent(type, repo,
-											c.get("message").asText(),
-											"https://github.com/" + repo + "/commit/"
-													+ c.get("sha").asText(),
-											createdAt);
-								});
-					}
-					default:
-						return Stream
-								.of(new GitHubEvent(type, repo, null, null, createdAt));
-					}
-				}).distinct().collect(Collectors.toList());
+		return StreamSupport.stream(node.spliterator(), false).flatMap(n -> {
+			String type = n.get("type").asText().replace("Event", "");
+			String repo = n.get("repo").get("name").asText();
+			String createdAt = n.get("created_at").asText();
+			switch (type) {
+			case "PullRequest":
+				return Stream.of(new GitHubEvent(type, repo, null,
+						n.get("payload").get("pull_request").get("html_url").asText(),
+						createdAt));
+			case "Push": {
+				JsonNode commits = n.get("payload").get("commits");
+				return stream(spliterator(commits.elements(), commits.size(), SIZED),
+						false).map(c -> {
+							return new GitHubEvent(type, repo,
+									c.get("message").asText(), "https://github.com/"
+											+ repo + "/commit/" + c.get("sha").asText(),
+									createdAt);
+						});
+			}
+			default:
+				return Stream.of(new GitHubEvent(type, repo, null, null, createdAt));
+			}
+		}).distinct().collect(Collectors.toList());
 	}
 
 	public static class GitHubEvent {
