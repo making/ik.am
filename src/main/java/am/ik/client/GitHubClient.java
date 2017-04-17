@@ -47,7 +47,7 @@ public class GitHubClient {
 					List<GitHubEvent> events = bodyToList(node);
 					last.set(Tuples.of(res.headers().asHttpHeaders().getETag(), events));
 					return events;
-				})).flatMapMany(Flux::fromIterable).switchOnError(last.get() == null
+				})).flatMapMany(Flux::fromIterable).onErrorResume(e -> last.get() == null
 						? Flux.empty() : Flux.fromIterable(last.get().getT2()));
 	}
 

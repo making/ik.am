@@ -32,7 +32,7 @@ public class BlogClient {
 						n.get("frontMatter").get("title").asText(),
 						n.get("created").get("date").asText(),
 						n.get("updated").get("date").asText()))
-				.switchOnError(Flux.empty());
+				.onErrorResume(e -> Flux.empty());
 	}
 
 	public static class Entry {
