@@ -2,6 +2,8 @@ package am.ik;
 
 import java.io.IOException;
 
+import org.springframework.web.reactive.result.view.AbstractUrlBasedView;
+import org.springframework.web.reactive.result.view.View;
 import org.springframework.web.reactive.result.view.ViewResolver;
 import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.reactive.result.view.freemarker.FreeMarkerView;
@@ -12,15 +14,18 @@ import freemarker.template.TemplateException;
 
 class FreeMarkerConfig {
 	static ViewResolver viewResolver() {
-		FreeMarkerViewResolver viewResolver = new FreeMarkerViewResolver();
+		Configuration configuration = configuration();
+		FreeMarkerViewResolver viewResolver = new FreeMarkerViewResolver() {
+			@Override
+			protected View applyLifecycleMethods(String viewName,
+					AbstractUrlBasedView view) {
+				FreeMarkerView freeMarkerView = (FreeMarkerView) view;
+				freeMarkerView.setConfiguration(configuration);
+				return freeMarkerView;
+			}
+		};
 		viewResolver.setPrefix("");
 		viewResolver.setSuffix(".ftl");
-		Configuration configuration = configuration();
-		viewResolver.setLifecycleMethods((viewName, view) -> {
-			FreeMarkerView freeMarkerView = (FreeMarkerView) view;
-			freeMarkerView.setConfiguration(configuration);
-			return freeMarkerView;
-		});
 		return viewResolver;
 	}
 

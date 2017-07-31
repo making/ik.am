@@ -15,7 +15,7 @@ public class BlogClient {
 	private final WebClient webClient;
 
 	public BlogClient(ClientHttpConnector httpConnector) {
-		this.webClient = WebClient.builder().baseUrl("https://blog-api.ik.am/api/")
+		this.webClient = WebClient.builder().baseUrl("https://blog-api.cfapps.pez.pivotal.io/api/")
 				.clientConnector(httpConnector).build();
 	}
 
