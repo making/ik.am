@@ -1,0 +1,40 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ikam-web-service
+spec:
+  selector:
+    app: ikam-web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ikam-web-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ikam-web
+    spec:
+      containers:
+      - name: ikam-web
+        image: docker.ik.am/ikam/web:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: JAVA_OPTS
+          value: "-XX:ReservedCodeCacheSize=32M -XX:MaxDirectMemorySize=32M"
+        resources:
+          limits:
+            memory: "256Mi"
+          requests:
+            memory: "256Mi"
+      imagePullSecrets:
+      - name: docker-ikam # kubectl create secret docker-registry docker-ikam --docker-server=docker.ik.am --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
