@@ -8,4 +8,4 @@ applications:
   - route: www.ik.am
   env:
     JAVA_OPTS: '-XX:ReservedCodeCacheSize=32M -XX:MaxDirectMemorySize=32M'
-    JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: {stack_threads: 30, memory_sizes: {metaspace: 30m, stack: 228k}, memory_heuristics: {heap: 50000, native: 10}}]'
+    JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: {stack_threads: 30}]'
