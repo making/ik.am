@@ -30,7 +30,7 @@ public class HomeHandler {
 	}
 
 	public Mono<ServerResponse> indexView(ServerRequest req) {
-		return Mono.when(blogClient.findEntries(10).collectList(),
+		return Mono.zip(blogClient.findEntries(10).collectList(),
 				gitHubClient.findEvents().collectList()).flatMap(t -> {
 					Map<String, Object> model = new HashMap<>();
 					model.put("entries", t.getT1());
