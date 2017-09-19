@@ -1,0 +1,5 @@
+applications:
+- name: web
+  memory: 256m
+  staging_env:
+    JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: {stack_threads: 30}]'

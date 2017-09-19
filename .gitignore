@@ -2,3 +2,5 @@
 target
 .idea
 credentials.yml
+.*.cache
+*.droplet
