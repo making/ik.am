@@ -34,11 +34,12 @@ resources:
   - name: k8s
     type: kubernetes
     source:
-      server: {{k8s-server}}
-      namespace: default
-      token: {{k8s-token}}
-      #certificate_authority: {{k8s-cert}}
-      insecure_skip_tls_verify: true
+      kubeconfig: {{kubeconfig}}
+  - name: cflocal-release
+    type: github-release
+    source:
+      owner: sclevine
+      repository: cflocal
 jobs:
   - name: unit-test
     plan:
@@ -164,6 +165,10 @@ jobs:
         passed:
         - deploy-to-nexus
       - get: repo-version
+      - get: cflocal-release
+        params:
+          globs:
+          - '*-linux'
     - task: download
       params:
         <<: *NEXUS_SNAPSHOT
@@ -174,8 +179,8 @@ jobs:
       params:
         <<: *NEXUS_SNAPSHOT
         DOCKER_REGISTRY_URL: {{docker-registry-url}}
-        DOCKER_USERNAME: {{nexus-username}}
-        DOCKER_PASSWORD: {{nexus-password}}
+        DOCKER_USERNAME: {{docker-username}}
+        DOCKER_PASSWORD: {{docker-password}}
         BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.5
       config:
         platform: linux
@@ -186,6 +191,7 @@ jobs:
         inputs:
         - name: repo
         - name: build
+        - name: cflocal-release
         outputs:
         - name: output
         run:
@@ -203,12 +209,14 @@ jobs:
             apk add -q --update unzip curl tar gzip  && rm -rf /var/cache/apk/*
             curl -L -J -s -o cf-cli.tgz "https://cli.run.pivotal.io/stable?release=linux64-binary&version=6.31.0"
             tar -zxf cf-cli.tgz -C /usr/local/bin
-            curl -L -J -s -o cflocal.zip https://github.com/sclevine/cflocal/releases/download/v0.13.0/cflocal-0.13.0-linux.zip
-            unzip -q cflocal.zip
-            ./cflocal-0.13.0-linux
+            # curl -L -J -s -o cflocal.zip https://github.com/sclevine/cflocal/releases/download/v0.13.0/cflocal-0.13.0-linux.zip
+            # unzip -q cflocal.zip
+            chmod +x ./cflocal-release/cflocal-*-linux
+            ./cflocal-release/cflocal-*-linux
 
             # Build image
-            export REPO=${DOCKER_REGISTRY_URL}/ikam/web
+            #export REPO=${DOCKER_REGISTRY_URL}/ikam/web
+            export REPO=making/web
             cp repo/local.yml ./
             cf local stage web -p ./build/app.jar -b ${BUILDPACK}
             cf local export web -r ${REPO}
@@ -225,7 +233,26 @@ jobs:
         trigger: true
         passed:
         - deploy-to-docker-registry
+    - task: configure
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: starkandwayne/concourse
+        inputs:
+        - name: repo
+        outputs:
+        - name: output
+        run:
+          path: bash
+          args: 
+          - -c
+          - |
+            set -e
+            sed 's|docker.ik.am/ikam/web|making/web|' repo/k8s/web.yml > output/web.yml
     - put: k8s
       params:
-        kubectl: apply -f repo/k8s/web.yml
+        kubectl: apply -f output/web.yml
+        wait_until_ready: 180
         wait_until_ready_selector: app=ikam-web
