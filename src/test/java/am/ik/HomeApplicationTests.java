@@ -39,6 +39,6 @@ public class HomeApplicationTests {
 
 	@Test
 	public void root() {
-		webClient.get().uri("").exchange().expectStatus().isOk();
+		webClient.get().exchange().expectStatus().isOk();
 	}
 }
