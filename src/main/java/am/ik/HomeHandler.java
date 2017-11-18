@@ -13,7 +13,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import am.ik.client.BlogClient;
+import am.ik.client.BlogClient.Entry;
 import am.ik.client.GitHubClient;
+import am.ik.client.GitHubClient.GitHubEvent;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class HomeHandler {
@@ -31,13 +34,11 @@ public class HomeHandler {
 	}
 
 	public Mono<ServerResponse> indexView(ServerRequest req) {
-		return Mono.zip(blogClient.findEntries(10).collectList(),
-				gitHubClient.findEvents().collectList()).flatMap(t -> {
-					Map<String, Object> model = new HashMap<>();
-					model.put("entries", t.getT1());
-					model.put("events", t.getT2());
-					return ok().contentType(MediaType.TEXT_HTML)
-							.render("index", model);
-				});
+		Flux<Entry> entries = blogClient.findEntries(10);
+		Flux<GitHubEvent> events = gitHubClient.findEvents();
+		Map<String, Object> model = new HashMap<>();
+		model.put("entries", entries);
+		model.put("events", events);
+		return ok().contentType(MediaType.TEXT_HTML).render("index", model);
 	}
 }
