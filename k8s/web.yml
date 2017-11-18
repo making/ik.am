@@ -7,9 +7,9 @@ spec:
     app: ikam-web
   ports:
   - protocol: TCP
-    port: 80
-    targetPort: 8080
-  type: LoadBalancer
+    port: 8080
+    nodePort: 30080
+  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: ikam-web
-        image: docker.ik.am/ikam/web:latest
+        image: making/web:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
