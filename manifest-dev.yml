@@ -1,11 +1,8 @@
 applications:
-- name: web
+- name: web-dev
   memory: 256m
   buildpack: java_buildpack
   path: target/web-0.0.1-SNAPSHOT.jar
-  routes:
-  - route: ik.am
-  - route: www.ik.am
   env:
     JAVA_OPTS: '-XX:ReservedCodeCacheSize=32M -XX:MaxDirectMemorySize=32M'
     JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: {stack_threads: 30}]'
