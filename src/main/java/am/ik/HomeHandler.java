@@ -6,6 +6,7 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -35,7 +36,8 @@ public class HomeHandler {
 					Map<String, Object> model = new HashMap<>();
 					model.put("entries", t.getT1());
 					model.put("events", t.getT2());
-					return ok().render("index", model);
+					return ok().contentType(MediaType.TEXT_HTML)
+							.render("index", model);
 				});
 	}
 }

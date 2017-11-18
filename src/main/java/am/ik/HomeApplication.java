@@ -52,7 +52,7 @@ public class HomeApplication {
 
 		RouterFunction<?> route = homeHandler.route().and(staticResources());
 		return toHttpHandler(route, HandlerStrategies.builder()
-				.viewResolver(FreeMarkerConfig.viewResolver()).build());
+				.viewResolver(ThymeleafConfig.viewResolver()).build());
 	}
 
 	static RouterFunction<ServerResponse> staticResources() {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -30,20 +30,24 @@
     <section>
         <h2>Blog</h2>
         <ul>
-        <#list entries as entry>
-            <li>${entry.updatedAt} <a href="https://blog.ik.am/entries/${entry.entryId}">${entry.title}</a></li>
-        </#list>
+            <li th:each="entry : ${entries}"><span th:text="${entry.updatedAt}"/> <a
+                    th:href="@{https://blog.ik.am/entries/{entryId}(entryId=${entry.entryId})}"
+                    th:text="${entry.title}"></a>
+            </li>
         </ul>
     </section>
     <section>
         <h2>Github</h2>
         <ul>
-        <#list events as event>
-            <li>${event.createdAt} [${event.type}] <a href="https://github.com/${event.repo}">${event.repo}</a>
-                <#if event.message??><br>📝 <a href="${event.url}">${event.message}</a><#elseif event.url??>
-                    <br><a href="${event.url}">🔎</a></#if>
+            <li th:each="event : ${events}"><span th:text="${event.createdAt}"/> [<span th:text="${event.type}"></span>]
+                <a th:href="@{https://github.com/{repo}(repo=${event.repo})}" th:text="${event.repo}"></a>
+                <!--/*/ <th:block th:if="${event.message != null}"> /*/-->
+                <br>📝 <a th:href="${event.url}" th:text="${event.message}"></a>
+                <!--/*/ </th:block> /*/-->
+                <!--/*/ <th:block th:if="${event.message == null && event.url != null}"> /*/-->
+                <br><a th:href="${event.url}">🔎</a>
+                <!--/*/ </th:block> /*/-->
             </li>
-        </#list>
         </ul>
     </section>
     <footer>
