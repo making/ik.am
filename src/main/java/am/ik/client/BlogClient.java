@@ -15,7 +15,7 @@ public class BlogClient {
 	private final WebClient webClient;
 
 	public BlogClient(ClientHttpConnector httpConnector) {
-		this.webClient = WebClient.builder().baseUrl("https://blog-api.cfapps.io/api/")
+		this.webClient = WebClient.builder().baseUrl("https://blog-api-35-190-30-50.sslip.io/api/")
 				.clientConnector(httpConnector).build();
 	}
 
