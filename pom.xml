@@ -5,7 +5,7 @@
 
 	<groupId>am.ik</groupId>
 	<artifactId>web</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>web</name>
